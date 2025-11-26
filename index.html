@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Beyond The Bin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-[#FFFCDF]">
+    <div id="root"></div>
+
+    <!-- React & ReactDOM (CDN) -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel so we can write JSX directly in this file -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      // Simple emoji-based replacements for lucide-react icons
+      const IconWrapper = ({ children }) => (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 18,
+            height: 18,
+          }}
+        >
+          {children}
+        </span>
+      );
+
+      const Plus = (props) => <IconWrapper>＋</IconWrapper>;
+      const ShoppingCart = (props) => <IconWrapper>🛒</IconWrapper>;
+      const Book = (props) => <IconWrapper>📖</IconWrapper>;
+      const ChefHat = (props) => <IconWrapper>👩‍🍳</IconWrapper>;
+      const X = (props) => <IconWrapper>✕</IconWrapper>;
+      const Check = (props) => <IconWrapper>✔</IconWrapper>;
+      const LogOut = (props) => <IconWrapper>⎋</IconWrapper>;
+      const MapPin = (props) => <IconWrapper>📍</IconWrapper>;
+      const Award = (props) => <IconWrapper>🏅</IconWrapper>;
+      const Target = (props) => <IconWrapper>🎯</IconWrapper>;
+      const ChevronDown = (props) => <IconWrapper>▼</IconWrapper>;
+      const ChevronUp = (props) => <IconWrapper>▲</IconWrapper>;
+      const Trash2 = (props) => <IconWrapper>🗑️</IconWrapper>;
+
+      function BeyondTheBin() {
+        const logoSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 280'%3E%3Cdefs%3E%3Cstyle%3E.carrot-body%7Bfill:%23FF8C00;stroke:%23D97000;stroke-width:2%7D.carrot-lines%7Bfill:none;stroke:%23D97000;stroke-width:1.5%7D.carrot-greens%7Bfill:%234CAF50;stroke:%23388E3C;stroke-width:2%7D.green-text%7Bfill:%233F6C1F;font-family:'Arial Black','Arial Bold',sans-serif;font-weight:900;font-size:72px;letter-spacing:-1px;text-anchor:middle%7D.orange-text%7Bfill:%23D05A00;font-family:'Arial Black','Arial Bold',sans-serif;font-weight:900;font-size:72px;letter-spacing:-1px;text-anchor:middle%7D%3C/style%3E%3C/defs%3E%3C!-- Carrot (horizontal, centered) --%3E%3Cg transform='translate(250,90)'%3E%3C!-- Carrot body (horizontal, tapered) --%3E%3Cpath class='carrot-body' d='M-80,0 Q-60,-15 -20,-15 Q20,-12 60,-8 Q90,-5 110,0 Q90,5 60,8 Q20,12 -20,15 Q-60,15 -80,0 Z'/%3E%3C!-- Carrot texture lines --%3E%3Cpath class='carrot-lines' d='M-50,-8 Q-48,-2 -50,8'/%3E%3Cpath class='carrot-lines' d='M-20,-10 Q-18,-2 -20,10'/%3E%3Cpath class='carrot-lines' d='M10,-10 Q12,-2 10,10'/%3E%3Cpath class='carrot-lines' d='M40,-7 Q42,-2 40,7'/%3E%3Cpath class='carrot-lines' d='M70,-5 Q72,-2 70,5'/%3E%3C!-- Carrot greens (leafy top on left side) --%3E%3Cpath class='carrot-greens' d='M-80,-5 Q-90,-15 -95,-20 Q-92,-18 -88,-12 Q-85,-8 -80,-5 Z'/%3E%3Cpath class='carrot-greens' d='M-80,0 Q-92,-5 -100,-8 Q-95,-6 -88,-2 Q-82,1 -80,0 Z'/%3E%3Cpath class='carrot-greens' d='M-80,5 Q-90,10 -95,18 Q-92,14 -88,10 Q-85,7 -80,5 Z'/%3E%3C/g%3E%3C!-- Text BEYOND --%3E%3Ctext class='green-text' x='250' y='180'%3EBEYOND%3C/text%3E%3C!-- Text THE BIN --%3E%3Ctext class='orange-text' x='250' y='250'%3ETHE BIN%3C/text%3E%3C/svg%3E`;
+
+        const [isLoggedIn, setIsLoggedIn] = useState(false);
+        const [userProfile, setUserProfile] = useState({ name: "", location: "" });
+        const [profileForm, setProfileForm] = useState({ name: "", location: "" });
+        const [journeyMode, setJourneyMode] = useState("home");
+        const [activeTab, setActiveTab] = useState("generator");
+        const [selectedScraps, setSelectedScraps] = useState([]);
+        const [generatedRecipes, setGeneratedRecipes] = useState([]);
+        const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
+        const [isGenerating, setIsGenerating] = useState(false);
+        const [savedRecipes, setSavedRecipes] = useState([]);
+        const [expandedRecipe, setExpandedRecipe] = useState(null);
+        const [shoppingList, setShoppingList] = useState([]);
+        const [newShoppingItem, setNewShoppingItem] = useState("");
+        const [challengeComplete, setChallengeComplete] = useState(false);
+        const [completedChallenges, setCompletedChallenges] = useState([]);
+        const [showChallenges, setShowChallenges] = useState(false);
+        const [mealPlan, setMealPlan] = useState({
+          Monday: "",
+          Tuesday: "",
+          Wednesday: "",
+          Thursday: "",
+          Friday: "",
+          Saturday: "",
+          Sunday: "",
+        });
+
+        const foodBanks = [
+          {
+            name: "Auckland City Mission",
+            address: "15 Auburn Street (off Boston Road), Grafton",
+            hours: "Mon-Fri 9am-3pm (call first)",
+            phone: "0800 223 663",
+          },
+          {
+            name: "VisionWest Pātaka Kai",
+            address: "97 Glendale Road, Glen Eden",
+            hours: "Walk-in service (call for hours)",
+            phone: "0800 990 026",
+          },
+          {
+            name: "Presbyterian Support Northern",
+            address: "1207 Dominion Road, Mount Roskill",
+            hours: "Tue & Fri 10am-1pm",
+            phone: "021 229 0355",
+          },
+          {
+            name: "St Vincent de Paul Onehunga",
+            address: "6A Henderson Place, Onehunga",
+            hours: "Mon-Fri 10am-3pm",
+            phone: "09 815 6122",
+          },
+          {
+            name: "Hope Centre Foodbank",
+            address: "4109 Great North Road, Kelston",
+            hours: "Wed-Fri 10am-3pm",
+            phone: "021 080 48436",
+          },
+          {
+            name: "South Auckland Christian Food Bank",
+            address: "South Auckland (call for location)",
+            hours: "Call for same-day delivery",
+            phone: "0508 242 643",
+          },
+          {
+            name: "Salt Trust (North Auckland)",
+            address: "6 Hibiscus Coast Highway, Silverdale",
+            hours: "Mon 2pm-4:30pm (by appointment)",
+            phone: "0800 559 009",
+          },
+          {
+            name: "Te Atatu Foodbank",
+            address: "448 Old Te Atatu Road, Te Atatu Peninsula",
+            hours: "Thu 12pm-2pm (book online only)",
+            phone: "teatatufoodbank@gmail.com",
+          },
+        ];
+
+        const foodBankTips = [
+          "📦 Only donate unopened, non-expired food items",
+          "🥫 Canned goods, pasta, rice, and cereals are most needed",
+          "❄️ Most food banks cannot accept frozen items",
+          "🚫 Check expiry dates - at least 1 month before expiry",
+        ];
+
+        const commonScraps = [
+          { name: "Potato Peels", emoji: "🥔" },
+          { name: "Carrot Ends", emoji: "🥕" },
+          { name: "Stale Bread", emoji: "🍞" },
+          { name: "Ripe Bananas", emoji: "🍌" },
+          { name: "Leftover Rice", emoji: "🍚" },
+          { name: "Aquafaba", emoji: "🥫" },
+          { name: "Wilted Greens", emoji: "🥬" },
+          { name: "Berries", emoji: "🫐" },
+          { name: "Cooked Pasta", emoji: "🍝" },
+        ];
+
+        const recipes = {
+          "Potato Peels": [
+            {
+              title: "🥔 Crispy Potato Peel Chips",
+              time: "15 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Potato peels", amount: "All peels" },
+                { item: "Oil", amount: "1 tbsp" },
+                { item: "Salt", amount: "1/2 tsp" },
+              ],
+              instructions:
+                "1. Wash potato peels thoroughly\n2. Pat dry completely\n3. Toss with oil and salt\n4. Spread on baking tray\n5. Bake 180°C for 10-12 mins until crispy",
+              tips: "Watch closely - they burn fast! Season with any spices you like.",
+            },
+            {
+              title: "🧀 Cheesy Potato Peel Crisps",
+              time: "20 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Potato peels", amount: "All peels" },
+                { item: "Oil", amount: "1.5 tbsp" },
+                { item: "Cheese", amount: "1/4 cup" },
+                { item: "Salt and pepper", amount: "to taste" },
+              ],
+              instructions:
+                "1. Wash and dry potato peels\n2. Toss with oil, salt, pepper\n3. Bake 180°C for 8 mins\n4. Sprinkle cheese on top\n5. Bake 4-5 mins more until cheese melts",
+              tips: "Like loaded fries but way better and free!",
+            },
+          ],
+          "Carrot Ends": [
+            {
+              title: "🥕 Carrot Top Pesto",
+              time: "10 mins",
+              equipment: "💧 Blender",
+              ingredients: [
+                { item: "Carrot tops/ends", amount: "2 cups" },
+                { item: "Garlic", amount: "2 cloves" },
+                { item: "Oil", amount: "1/4 cup" },
+                { item: "Nuts", amount: "1/4 cup" },
+              ],
+              instructions:
+                "1. Wash carrot tops well\n2. Blend all ingredients\n3. Add salt to taste\n4. Use on pasta or bread",
+              tips: "Carrot tops are super nutritious!",
+            },
+            {
+              title: "🥣 Carrot Scrap Veggie Stock",
+              time: "30 mins",
+              equipment: "🔥 Stove",
+              ingredients: [
+                { item: "Carrot ends/peels", amount: "All scraps" },
+                { item: "Water", amount: "4 cups" },
+                { item: "Bay leaf", amount: "1" },
+                { item: "Salt", amount: "1 tsp" },
+              ],
+              instructions:
+                "1. Put all scraps in pot\n2. Cover with water\n3. Simmer 30 mins\n4. Strain and use for soups",
+              tips: "Save veggie scraps in freezer for stock!",
+            },
+          ],
+          "Stale Bread": [
+            {
+              title: "🍞 Easy Breadcrumbs",
+              time: "15 mins",
+              equipment: "🔥 Oven",
+              ingredients: [{ item: "Stale bread", amount: "All pieces" }],
+              instructions:
+                "1. Tear bread into chunks\n2. Bake 150°C for 10 mins until dry\n3. Let cool\n4. Crush in bag with rolling pin\n5. Store in jar",
+              tips: "Lasts months! Use on pasta, chicken, anything.",
+            },
+            {
+              title: "🥗 Crispy Croutons",
+              time: "15 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Stale bread", amount: "Cubed" },
+                { item: "Oil", amount: "3 tbsp" },
+                { item: "Garlic powder", amount: "1 tsp" },
+                { item: "Salt", amount: "1/2 tsp" },
+              ],
+              instructions:
+                "1. Cut bread into cubes\n2. Toss with oil, garlic, salt\n3. Spread on tray\n4. Bake 180°C for 10-12 mins\n5. Cool completely",
+              tips: "Perfect for salads or just snacking!",
+            },
+          ],
+          "Ripe Bananas": [
+            {
+              title: "🍌 Easy Banana Muffins",
+              time: "25 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Ripe bananas", amount: "2-3" },
+                { item: "Flour", amount: "1.5 cups" },
+                { item: "Sugar", amount: "1/2 cup" },
+                { item: "Egg", amount: "1" },
+                { item: "Butter", amount: "1/4 cup melted" },
+              ],
+              instructions:
+                "1. Mash bananas with fork\n2. Mix in egg, butter, sugar\n3. Add flour, stir until just combined\n4. Pour into muffin tin\n5. Bake 180°C for 18-20 mins",
+              tips: "The browner the banana, the sweeter the muffin!",
+            },
+            {
+              title: "🍫 Banana Chocolate Chip Muffins",
+              time: "30 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Ripe bananas", amount: "2-3" },
+                { item: "Flour", amount: "1.5 cups" },
+                { item: "Sugar", amount: "1/2 cup" },
+                { item: "Egg", amount: "1" },
+                { item: "Butter", amount: "1/4 cup" },
+                { item: "Chocolate chips", amount: "1/2 cup" },
+              ],
+              instructions:
+                "1. Mash bananas thoroughly\n2. Whisk in egg, butter, sugar\n3. Fold in flour\n4. Stir in chocolate chips\n5. Bake 180°C for 20-22 mins",
+              tips: "Break up a chocolate bar instead of buying chips!",
+            },
+          ],
+          "Leftover Rice": [
+            {
+              title: "🍚 Classic Egg Fried Rice",
+              time: "15 mins",
+              equipment: "🔥 Stove",
+              ingredients: [
+                { item: "Cold leftover rice", amount: "2 cups" },
+                { item: "Eggs", amount: "2" },
+                { item: "Oil", amount: "2 tbsp" },
+                { item: "Frozen veg", amount: "1 cup" },
+                { item: "Soy sauce", amount: "2 tbsp" },
+              ],
+              instructions:
+                "1. Heat oil, scramble eggs, set aside\n2. Add frozen veg, stir-fry 2-3 mins\n3. Add cold rice, break up clumps\n4. Stir-fry 3-4 mins\n5. Add eggs back, add soy sauce",
+              tips: "Cold day-old rice works best! Frozen veg = no chopping.",
+            },
+            {
+              title: "🍙 Rice Balls (Onigiri)",
+              time: "10 mins",
+              equipment: "💧 No cooking",
+              ingredients: [
+                { item: "Leftover rice", amount: "2 cups" },
+                { item: "Salt", amount: "1/2 tsp" },
+                { item: "Filling (tuna, cheese)", amount: "optional" },
+              ],
+              instructions:
+                "1. Wet hands with water\n2. Sprinkle salt on hands\n3. Form rice into triangles\n4. Add filling in center if desired\n5. Wrap in seaweed (optional)",
+              tips: "Great portable snack! Add any filling you like.",
+            },
+          ],
+          Aquafaba: [
+            {
+              title: "🥫 Aquafaba Meringues",
+              time: "90 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Aquafaba", amount: "1/2 cup" },
+                { item: "Sugar", amount: "3/4 cup" },
+                { item: "Vanilla", amount: "1/2 tsp" },
+              ],
+              instructions:
+                "1. Whip aquafaba until stiff peaks (8-10 mins)\n2. Gradually add sugar while whipping\n3. Add vanilla\n4. Pipe onto baking tray\n5. Bake 100°C for 90 mins",
+              tips: "That liquid from canned chickpeas is GOLD!",
+            },
+            {
+              title: "🍰 Quick Aquafaba Mousse",
+              time: "15 mins + chill",
+              equipment: "💧 No cooking",
+              ingredients: [
+                { item: "Aquafaba", amount: "1/2 cup" },
+                { item: "Sugar", amount: "1/4 cup" },
+                { item: "Cocoa powder", amount: "2 tbsp" },
+              ],
+              instructions:
+                "1. Whip aquafaba until soft peaks\n2. Add sugar gradually, whip until stiff\n3. Fold in cocoa powder gently\n4. Spoon into cups\n5. Chill 2 hours",
+              tips: "Vegan chocolate mousse using chickpea water!",
+            },
+          ],
+          "Wilted Greens": [
+            {
+              title: "🥬 Revived Green Smoothie",
+              time: "5 mins",
+              equipment: "💧 Blender",
+              ingredients: [
+                { item: "Wilted greens", amount: "2 cups" },
+                { item: "Banana", amount: "1" },
+                { item: "Apple juice", amount: "1 cup" },
+              ],
+              instructions:
+                "1. Wash wilted greens\n2. Add all ingredients to blender\n3. Blend until smooth\n4. Add ice if desired",
+              tips: "Wilted greens are perfect for smoothies!",
+            },
+            {
+              title: "🍜 Quick Greens Soup",
+              time: "15 mins",
+              equipment: "🔥 Stove",
+              ingredients: [
+                { item: "Wilted greens", amount: "3 cups chopped" },
+                { item: "Stock", amount: "3 cups" },
+                { item: "Garlic", amount: "2 cloves" },
+                { item: "Oil", amount: "2 tbsp" },
+              ],
+              instructions:
+                "1. Sauté garlic in oil\n2. Add stock, bring to boil\n3. Add wilted greens, simmer 5 mins\n4. Blend if you want smooth soup\n5. Season with salt and pepper",
+              tips: "Cooking wilted greens brings them back to life!",
+            },
+          ],
+          Berries: [
+            {
+              title: "🫐 Berry Compote",
+              time: "15 mins",
+              equipment: "🔥 Stove",
+              ingredients: [
+                { item: "Berries", amount: "2 cups" },
+                { item: "Sugar", amount: "1/4 cup" },
+                { item: "Lemon juice", amount: "1 tbsp" },
+              ],
+              instructions:
+                "1. Put berries, sugar in pot\n2. Heat on medium, stirring\n3. Simmer 10 mins until thick\n4. Add lemon juice\n5. Cool and store",
+              tips: "Works with mushy berries! Perfect on yogurt or pancakes.",
+            },
+            {
+              title: "🧊 Berry Nice Cream",
+              time: "5 mins",
+              equipment: "💧 Blender",
+              ingredients: [
+                { item: "Frozen berries", amount: "2 cups" },
+                { item: "Banana", amount: "1 frozen" },
+                { item: "Honey", amount: "2 tbsp" },
+              ],
+              instructions:
+                "1. Let berries sit 5 mins to soften\n2. Blend all ingredients until smooth\n3. Serve immediately",
+              tips:
+                "Freeze berries that are going bad - perfect for this!",
+            },
+          ],
+          "Cooked Pasta": [
+            {
+              title: "🍝 Crispy Pasta Snack",
+              time: "20 mins",
+              equipment: "🔥 Oven",
+              ingredients: [
+                { item: "Cooked pasta", amount: "2 cups" },
+                { item: "Oil", amount: "2 tbsp" },
+                { item: "Parmesan", amount: "1/4 cup" },
+                { item: "Salt", amount: "1/2 tsp" },
+              ],
+              instructions:
+                "1. Pat pasta dry\n2. Toss with oil, parmesan, salt\n3. Spread on tray\n4. Bake 200°C for 15-20 mins\n5. Cool before eating",
+              tips: "Leftover pasta becomes addictive chips!",
+            },
+            {
+              title: "🍳 Pasta Frittata",
+              time: "25 mins",
+              equipment: "🔥 Stove + Oven",
+              ingredients: [
+                { item: "Cooked pasta", amount: "2 cups" },
+                { item: "Eggs", amount: "4" },
+                { item: "Cheese", amount: "1/2 cup" },
+                { item: "Oil", amount: "2 tbsp" },
+              ],
+              instructions:
+                "1. Beat eggs with cheese\n2. Mix in pasta\n3. Heat oil in oven-safe pan\n4. Pour in mixture\n5. Cook on stove 5 mins\n6. Transfer to oven 180°C for 15 mins",
+              tips:
+                "Italian way to use leftover pasta - works with any shape!",
+            },
+          ],
+        };
+
+        const generateRecipes = (scrapName) => {
+          return (
+            recipes[scrapName] || [
+              {
+                title: `${scrapName} Recipe`,
+                time: "15 mins",
+                equipment: "🔥 Stove",
+                ingredients: [{ item: scrapName, amount: "All" }],
+                instructions: "1. Prepare\n2. Cook\n3. Enjoy",
+                tips: "Simple and easy!",
+              },
+            ]
+          );
+        };
+
+        const showNotification = (message) => {
+          const n = document.createElement("div");
+          n.textContent = message;
+          n.style.cssText =
+            "position:fixed;top:80px;right:20px;background:#3B6003;color:white;padding:16px 24px;border-radius:8px;z-index:1000;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.15);";
+          document.body.appendChild(n);
+          setTimeout(() => n.remove(), 3000);
+        };
+
+        if (!isLoggedIn) {
+          return (
+            <div
+              className="min-h-screen flex items-center justify-center p-4"
+              style={{
+                background:
+                  "linear-gradient(135deg, #FFFCDF 0%, #CB5C00 100%)",
+              }}
+            >
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                <div className="text-center mb-8">
+                  <div className="w-64 h-48 mx-auto mb-2 flex items-center justify-center">
+                    <img
+                      src={logoSvg}
+                      alt="Beyond The Bin Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <p className="text-gray-600 mt-4 text-sm">
+                    Student Food Waste Fighter
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "#3B6003" }}
+                    >
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.name}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          name: e.target.value,
+                        })
+                      }
+                      placeholder="Enter your name"
+                      className="w-full p-3 border-2 rounded-lg"
+                      style={{ borderColor: "#3B6003" }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "#3B6003" }}
+                    >
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.location}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          location: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., Auckland"
+                      className="w-full p-3 border-2 rounded-lg"
+                      style={{ borderColor: "#3B6003" }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (
+                        profileForm.name.trim() &&
+                        profileForm.location.trim()
+                      ) {
+                        setUserProfile(profileForm);
+                        setIsLoggedIn(true);
+                      }
+                    }}
+                    className="w-full text-white py-3 rounded-lg font-medium"
+                    style={{ backgroundColor: "#CB5C00" }}
+                  >
+                    Start Fighting Food Waste!
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (journeyMode === "home") {
+          return (
+            <div className="min-h-screen" style={{ backgroundColor: "#FFFCDF" }}>
+              <header
+                className="text-white p-4"
+                style={{ backgroundColor: "#3B6003" }}
+              >
+                <div className="max-w-6xl mx-auto flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img src={logoSvg} alt="Logo" className="h-16 w-auto" />
+                  </div>
+                  <button
+                    onClick={() => setIsLoggedIn(false)}
+                    className="px-4 py-2 rounded-lg"
+                    style={{ backgroundColor: "#CB5C00" }}
+                  >
+                    <LogOut size={16} />
+                  </button>
+                </div>
+              </header>
+              <main className="max-w-4xl mx-auto p-6">
+                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                  <h2
+                    className="text-3xl font-bold text-center mb-8"
+                    style={{ color: "#3B6003" }}
+                  >
+                    What would you like to do?
+                  </h2>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div
+                      className="border-4 rounded-2xl p-6 cursor-pointer"
+                      style={{
+                        borderColor: "#CB5C00",
+                        backgroundColor: "#FFF5E6",
+                      }}
+                      onClick={() => setJourneyMode("cook")}
+                    >
+                      <div className="text-6xl text-center mb-4">🥕👨‍🍳</div>
+                      <h3
+                        className="text-2xl font-bold text-center mb-3"
+                        style={{ color: "#CB5C00" }}
+                      >
+                        COOK IT
+                      </h3>
+                      <p className="text-center text-sm mb-4">
+                        Turn scraps into recipes
+                      </p>
+                      <button
+                        className="w-full text-white py-3 rounded-lg font-bold"
+                        style={{ backgroundColor: "#CB5C00" }}
+                      >
+                        Start Cooking
+                      </button>
+                    </div>
+                    <div
+                      className="border-4 rounded-2xl p-6 cursor-pointer"
+                      style={{
+                        borderColor: "#3B6003",
+                        backgroundColor: "#F0F7E6",
+                      }}
+                      onClick={() => setJourneyMode("give")}
+                    >
+                      <div className="text-6xl text-center mb-4">📦🤝</div>
+                      <h3
+                        className="text-2xl font-bold text-center mb-3"
+                        style={{ color: "#3B6003" }}
+                      >
+                        GIVE IT
+                      </h3>
+                      <p className="text-center text-sm mb-4">
+                        Find food banks
+                      </p>
+                      <button
+                        className="w-full text-white py-3 rounded-lg font-bold"
+                        style={{ backgroundColor: "#3B6003" }}
+                      >
+                        Find Food Banks
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </main>
+            </div>
+          );
+        }
+
+        if (journeyMode === "give") {
+          return (
+            <div
+              className="min-h-screen"
+              style={{ backgroundColor: "#F0F7E6" }}
+            >
+              <header
+                className="text-white p-4"
+                style={{ backgroundColor: "#3B6003" }}
+              >
+                <div className="max-w-6xl mx-auto">
+                  <button
+                    onClick={() => setJourneyMode("home")}
+                    className="text-sm mb-2"
+                  >
+                    ← Back
+                  </button>
+                  <h1 className="text-2xl font-bold">GIVE IT - Food Banks</h1>
+                </div>
+              </header>
+              <main className="max-w-6xl mx-auto p-6">
+                <div className="bg-white rounded-lg p-6 mb-6 shadow">
+                  <h2
+                    className="text-2xl font-bold mb-4"
+                    style={{ color: "#3B6003" }}
+                  >
+                    💡 Key Tips
+                  </h2>
+                  <div className="space-y-2">
+                    {foodBankTips.map((tip, i) => (
+                      <div
+                        key={i}
+                        className="p-3 rounded"
+                        style={{ backgroundColor: "#F0F7E6" }}
+                      >
+                        <span className="text-sm">{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {foodBanks.map((bank, i) => (
+                    <div
+                      key={i}
+                      className="bg-white border-2 rounded-lg p-6"
+                      style={{ borderColor: "#3B6003" }}
+                    >
+                      <h3 className="font-bold text-xl mb-3">{bank.name}</h3>
+                      <p className="text-sm mb-2">
+                        <MapPin size={16} className="inline mr-2" />
+                        {bank.address}
+                      </p>
+                      <p className="text-sm mb-2">⏰ {bank.hours}</p>
+                      <p className="text-sm">📞 {bank.phone}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white rounded-lg p-6 mt-6 shadow">
+                  <h2
+                    className="text-2xl font-bold mb-4"
+                    style={{ color: "#3B6003" }}
+                  >
+                    💚 Why Give to Food Banks?
+                  </h2>
+                  <div className="space-y-3 text-sm">
+                    <p>
+                      🤝 <strong>Help Your Community:</strong> Many families
+                      and students in Auckland face food insecurity. Your
+                      donation directly helps people in need.
+                    </p>
+                    <p>
+                      🌍 <strong>Reduce Food Waste:</strong> Non-perishable food
+                      you won't use can feed someone else instead of ending up
+                      in landfill.
+                    </p>
+                    <p>
+                      📦 <strong>Make a Real Impact:</strong> Food banks
+                      distribute meals to thousands of people weekly. Every can
+                      and packet matters!
+                    </p>
+                    <p>
+                      🎓 <strong>Student Support:</strong> Many food banks
+                      specifically help students struggling with living costs
+                      while studying.
+                    </p>
+                  </div>
+                </div>
+              </main>
+            </div>
+          );
+        }
+
+        return (
+          <div
+            className="min-h-screen"
+            style={{ backgroundColor: "#FFF5E6" }}
+          >
+            <header
+              className="text-white p-4"
+              style={{
+                background: "linear-gradient(135deg, #CB5C00 0%, #FF8C42 100%)",
+              }}
+            >
+              <div className="max-w-6xl mx-auto">
+                <button
+                  onClick={() => setJourneyMode("home")}
+                  className="text-sm mb-2"
+                >
+                  ← Back
+                </button>
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold">COOK IT</h1>
+                  <button
+                    onClick={() => setShowChallenges(!showChallenges)}
+                    className="bg-white bg-opacity-20 rounded-lg px-4 py-2 text-sm font-medium"
+                  >
+                    {showChallenges ? "Hide" : "View"} Challenges
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {!challengeComplete && !showChallenges && (
+              <div className="max-w-6xl mx-auto p-4">
+                <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 flex justify-between items-center">
+                  <div className="flex gap-3">
+                    <Target size={24} style={{ color: "#CB5C00" }} />
+                    <div>
+                      <h3 className="font-bold">Today's Challenge</h3>
+                      <p className="text-sm">Cook with 3 different scraps</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newChallenge = {
+                        id: Date.now(),
+                        title: "Cook with 3 different scraps",
+                        completedAt: new Date().toLocaleDateString(),
+                      };
+                      setCompletedChallenges([...completedChallenges, newChallenge]);
+                      setChallengeComplete(true);
+                      showNotification("🎉 Challenge completed!");
+                    }}
+                    className="px-4 py-2 rounded-lg text-white font-bold"
+                    style={{ backgroundColor: "#3B6003" }}
+                  >
+                    Mark Complete
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showChallenges && (
+              <div className="max-w-6xl mx-auto p-4">
+                <div className="bg-white rounded-lg p-6 shadow">
+                  <h2
+                    className="text-2xl font-bold mb-4"
+                    style={{ color: "#3B6003" }}
+                  >
+                    🏆 Completed Challenges
+                  </h2>
+                  {completedChallenges.length === 0 ? (
+                    <p className="text-center text-gray-400 py-8">
+                      No challenges completed yet. Keep cooking!
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {completedChallenges.map((challenge) => (
+                        <div
+                          key={challenge.id}
+                          className="border-2 rounded-lg p-4 flex items-center justify-between"
+                          style={{
+                            borderColor: "#3B6003",
+                            backgroundColor: "#F0F7E6",
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Award size={24} style={{ color: "#CB5C00" }} />
+                            <div>
+                              <h3 className="font-bold">{challenge.title}</h3>
+                              <p className="text-sm text-gray-600">
+                                Completed on {challenge.completedAt}
+                              </p>
+                            </div>
+                          </div>
+                          <Check size={24} style={{ color: "#3B6003" }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <nav className="bg-white shadow-md">
+              <div className="max-w-6xl mx-auto flex">
+                {[
+                  { id: "generator", label: "Generator", icon: ChefHat },
+                  { id: "saved", label: "Saved", icon: Book },
+                  { id: "planner", label: "Meal Planner", icon: Target },
+                  { id: "shopping", label: "Shopping", icon: ShoppingCart },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setShowChallenges(false);
+                    }}
+                    className="flex items-center gap-2 px-6 py-4"
+                    style={
+                      activeTab === tab.id
+                        ? {
+                            backgroundColor: "#FFF5E6",
+                            color: "#CB5C00",
+                            borderBottom: "3px solid #CB5C00",
+                          }
+                        : {}
+                    }
+                  >
+                    <tab.icon size={18} />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </nav>
+
+            <main className="max-w-6xl mx-auto p-6">
+              {!showChallenges && activeTab === "generator" && (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-lg p-6 shadow">
+                    <h2
+                      className="text-xl font-bold mb-4"
+                      style={{ color: "#3B6003" }}
+                    >
+                      Select Your Scraps
+                    </h2>
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      {commonScraps.map((scrap) => (
+                        <button
+                          key={scrap.name}
+                          onClick={() => {
+                            const exists = selectedScraps.find(
+                              (s) => s.name === scrap.name
+                            );
+                            if (exists) {
+                              setSelectedScraps(
+                                selectedScraps.filter(
+                                  (s) => s.name !== scrap.name
+                                )
+                              );
+                            } else {
+                              setSelectedScraps([...selectedScraps, scrap]);
+                            }
+                          }}
+                          className="p-4 rounded-lg border-2"
+                          style={{
+                            borderColor: selectedScraps.find(
+                              (s) => s.name === scrap.name
+                            )
+                              ? "#CB5C00"
+                              : "#ddd",
+                            backgroundColor: selectedScraps.find(
+                              (s) => s.name === scrap.name
+                            )
+                              ? "#FFF5E6"
+                              : "white",
+                          }}
+                        >
+                          <div className="text-3xl mb-2">{scrap.emoji}</div>
+                          <div className="text-sm font-medium">
+                            {scrap.name}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (selectedScraps.length === 0) return;
+                        setIsGenerating(true);
+                        setTimeout(() => {
+                          const newRecipes = generateRecipes(
+                            selectedScraps[0].name
+                          ).map((r, i) => ({ ...r, id: Date.now() + i }));
+                          setGeneratedRecipes(newRecipes);
+                          setCurrentRecipeIndex(0);
+                          setIsGenerating(false);
+                        }, 1500);
+                      }}
+                      disabled={isGenerating || selectedScraps.length === 0}
+                      className="w-full text-white py-4 rounded-lg font-bold"
+                      style={{
+                        backgroundColor: "#CB5C00",
+                        opacity:
+                          isGenerating || selectedScraps.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      {isGenerating ? "Generating..." : "🔥 Generate Recipes"}
+                    </button>
+                  </div>
+
+                  {generatedRecipes.length > 0 &&
+                    generatedRecipes[currentRecipeIndex] && (
+                      <div className="bg-white rounded-lg p-6 shadow">
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-500">
+                            Recipe {currentRecipeIndex + 1} of{" "}
+                            {generatedRecipes.length}
+                          </p>
+                        </div>
+                        <h2 className="text-2xl font-bold mb-4">
+                          {generatedRecipes[currentRecipeIndex].title}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div
+                            className="p-3 rounded"
+                            style={{ backgroundColor: "#FFF5E6" }}
+                          >
+                            <p className="text-sm font-bold">
+                              {generatedRecipes[currentRecipeIndex].time}
+                            </p>
+                          </div>
+                          <div
+                            className="p-3 rounded"
+                            style={{ backgroundColor: "#FFF5E6" }}
+                          >
+                            <p className="text-sm font-bold">
+                              {generatedRecipes[currentRecipeIndex].equipment}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mb-4">
+                          <h3 className="font-bold mb-2">Ingredients:</h3>
+                          {generatedRecipes[
+                            currentRecipeIndex
+                          ].ingredients.map((ing, i) => (
+                            <div key={i} className="flex gap-2 mb-2">
+                              <Check
+                                size={16}
+                                style={{ color: "#3B6003" }}
+                              />
+                              <span className="text-sm">
+                                {ing.amount} {ing.item}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mb-4">
+                          <h3 className="font-bold mb-2">Instructions:</h3>
+                          <p className="text-sm whitespace-pre-line">
+                            {generatedRecipes[currentRecipeIndex].instructions}
+                          </p>
+                        </div>
+                        <div
+                          className="p-3 rounded mb-4"
+                          style={{ backgroundColor: "#FFFCDF" }}
+                        >
+                          <p className="text-sm">
+                            <strong>💡 Tip:</strong>{" "}
+                            {generatedRecipes[currentRecipeIndex].tips}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSavedRecipes([
+                              ...savedRecipes,
+                              {
+                                ...generatedRecipes[currentRecipeIndex],
+                                savedAt: Date.now(),
+                              },
+                            ]);
+                            showNotification("✅ Recipe saved successfully!");
+                          }}
+                          className="w-full text-white py-3 rounded-lg font-bold mb-4"
+                          style={{ backgroundColor: "#3B6003" }}
+                        >
+                          Save Recipe
+                        </button>
+                        {generatedRecipes.length > 1 && (
+                          <div className="flex justify-center gap-4">
+                            <button
+                              onClick={() =>
+                                setCurrentRecipeIndex(
+                                  Math.max(0, currentRecipeIndex - 1)
+                                )
+                              }
+                              disabled={currentRecipeIndex === 0}
+                              className="px-6 py-2 rounded-lg text-white transition hover:opacity-90"
+                              style={{
+                                backgroundColor: "#CB5C00",
+                                opacity: currentRecipeIndex === 0 ? 0.5 : 1,
+                              }}
+                            >
+                              ← Previous Recipe
+                            </button>
+                            <button
+                              onClick={() =>
+                                setCurrentRecipeIndex(
+                                  Math.min(
+                                    generatedRecipes.length - 1,
+                                    currentRecipeIndex + 1
+                                  )
+                                )
+                              }
+                              disabled={
+                                currentRecipeIndex ===
+                                generatedRecipes.length - 1
+                              }
+                              className="px-6 py-2 rounded-lg text-white transition hover:opacity-90"
+                              style={{
+                                backgroundColor: "#CB5C00",
+                                opacity:
+                                  currentRecipeIndex ===
+                                  generatedRecipes.length - 1
+                                    ? 0.5
+                                    : 1,
+                              }}
+                            >
+                              Next Recipe →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                </div>
+              )}
+
+              {!showChallenges && activeTab === "saved" && (
+                <div className="bg-white rounded-lg p-6 shadow">
+                  <h2 className="text-2xl font-bold mb-6">My Saved Recipes</h2>
+                  {savedRecipes.length === 0 ? (
+                    <p className="text-center text-gray-400 py-12">
+                      No saved recipes yet
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {savedRecipes.map((recipe, idx) => (
+                        <div
+                          key={recipe.savedAt}
+                          className="border-2 rounded-lg p-4"
+                          style={{ borderColor: "#CB5C00" }}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-bold text-lg flex-1">
+                              {recipe.title}
+                            </h3>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() =>
+                                  setExpandedRecipe(
+                                    expandedRecipe === idx ? null : idx
+                                  )
+                                }
+                                className="p-2"
+                              >
+                                {expandedRecipe === idx ? (
+                                  <ChevronUp size={20} />
+                                ) : (
+                                  <ChevronDown size={20} />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSavedRecipes(
+                                    savedRecipes.filter(
+                                      (_, i) => i !== idx
+                                    )
+                                  );
+                                  showNotification("🗑️ Recipe deleted");
+                                }}
+                                className="p-2 text-red-600"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {recipe.time} | {recipe.equipment}
+                          </p>
+
+                          {expandedRecipe === idx && (
+                            <div className="mt-4 pt-4 border-t">
+                              <div className="mb-4">
+                                <h4 className="font-bold mb-2">
+                                  Ingredients:
+                                </h4>
+                                {recipe.ingredients.map((ing, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex gap-2 mb-1 text-sm"
+                                  >
+                                    <Check
+                                      size={16}
+                                      style={{ color: "#3B6003" }}
+                                    />
+                                    <span>
+                                      {ing.amount} {ing.item}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mb-4">
+                                <h4 className="font-bold mb-2">
+                                  Instructions:
+                                </h4>
+                                <p className="text-sm whitespace-pre-line">
+                                  {recipe.instructions}
+                                </p>
+                              </div>
+                              <div
+                                className="p-3 rounded"
+                                style={{ backgroundColor: "#FFFCDF" }}
+                              >
+                                <p className="text-sm">
+                                  <strong>💡 Tip:</strong> {recipe.tips}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!showChallenges && activeTab === "planner" && (
+                <div className="bg-white rounded-lg p-6 shadow">
+                  <h2 className="text-2xl font-bold mb-6">Weekly Meal Plan</h2>
+                  <div className="space-y-3">
+                    {Object.keys(mealPlan).map((day) => (
+                      <div key={day}>
+                        <label
+                          className="block text-sm font-bold mb-1"
+                          style={{ color: "#3B6003" }}
+                        >
+                          {day}
+                        </label>
+                        <input
+                          type="text"
+                          value={mealPlan[day]}
+                          onChange={(e) =>
+                            setMealPlan({
+                              ...mealPlan,
+                              [day]: e.target.value,
+                            })
+                          }
+                          placeholder="What's for dinner?"
+                          className="w-full p-3 border-2 rounded-lg"
+                          style={{ borderColor: "#ddd" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMealPlan({
+                        Monday: "",
+                        Tuesday: "",
+                        Wednesday: "",
+                        Thursday: "",
+                        Friday: "",
+                        Saturday: "",
+                        Sunday: "",
+                      });
+                      showNotification("🗑️ Meal plan cleared");
+                    }}
+                    className="w-full mt-4 py-3 rounded-lg border-2 font-medium"
+                    style={{ borderColor: "#CB5C00", color: "#CB5C00" }}
+                  >
+                    Clear Week
+                  </button>
+                </div>
+              )}
+
+              {!showChallenges && activeTab === "shopping" && (
+                <div className="bg-white rounded-lg p-6 shadow">
+                  <h2 className="text-2xl font-bold mb-6">Shopping List</h2>
+                  <div className="flex gap-2 mb-6">
+                    <input
+                      type="text"
+                      value={newShoppingItem}
+                      onChange={(e) => setNewShoppingItem(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter" && newShoppingItem.trim()) {
+                          setShoppingList([
+                            ...shoppingList,
+                            {
+                              id: Date.now(),
+                              item: newShoppingItem.trim(),
+                              checked: false,
+                            },
+                          ]);
+                          setNewShoppingItem("");
+                        }
+                      }}
+                      placeholder="Add item..."
+                      className="flex-1 p-3 border-2 rounded-lg"
+                    />
+                    <button
+                      onClick={() => {
+                        if (newShoppingItem.trim()) {
+                          setShoppingList([
+                            ...shoppingList,
+                            {
+                              id: Date.now(),
+                              item: newShoppingItem.trim(),
+                              checked: false,
+                            },
+                          ]);
+                          setNewShoppingItem("");
+                        }
+                      }}
+                      className="text-white px-6 rounded-lg"
+                      style={{ backgroundColor: "#CB5C00" }}
+                    >
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {shoppingList.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-lg"
+                        style={{ backgroundColor: "#FFF5E6" }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={item.checked}
+                          onChange={() =>
+                            setShoppingList(
+                              shoppingList.map((i) =>
+                                i.id === item.id
+                                  ? { ...i, checked: !i.checked }
+                                  : i
+                              )
+                            )
+                          }
+                        />
+                        <span
+                          className={
+                            item.checked ? "line-through flex-1" : "flex-1"
+                          }
+                        >
+                          {item.item}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setShoppingList(
+                              shoppingList.filter((i) => i.id !== item.id)
+                            )
+                          }
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<BeyondTheBin />);
+    </script>
+  </body>
+</html>
